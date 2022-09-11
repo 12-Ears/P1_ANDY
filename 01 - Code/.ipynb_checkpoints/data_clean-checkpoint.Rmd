@@ -1,0 +1,164 @@
+---
+title: "P1-Data-Clean"
+author: "Andy Jiang"
+date: "2022-09-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Loading packages
+```{r Loading packages}
+
+library(tidyverse)
+library(ggplot2)
+
+```
+
+## Loading data
+
+
+
+```{r load data}
+absorbance<-read.csv("absorbance_data.csv")
+yadmit<-read.csv("yadmit_data.csv")
+phase<-read.csv("phase_data.csv")
+
+```
+
+## Clean data
+
+### Head view of data
+
+```{r clean, echo=FALSE}
+
+head(absorbance)
+head(yadmit)
+head(phase)
+
+```
+### Clean and transformation functions
+
+```{r, echo=FALSE}
+
+feature_select<-function(df) {
+  subset(df,select=-c(Subject
+                      ,DOT
+                      ,DOB
+                      ,AgeY
+                      ,Eth1
+                      ,Eth2
+                      ,Unnamed..15
+                      ,Lang1
+                      ,Lang2
+                      ,Lang3
+                      ,Unnamed..19
+                      ,PTA0.5
+                      ,PTA1
+                      ,PTA2
+                      ,PTA4
+                      ,Unnamed..49
+                      ,Unnamed..55
+                      ,Unnamed..64
+                      ,PTAAv4FA
+                      ,PTAAv4FAPoF
+                      ,PTAAv4FAPoFC
+                      ,TympType
+                      ,OAEPoFC
+                      ,Ear.coded
+                      ,Pressure
+                      ))
+}
+
+
+median_finder<-function(vec) {
+  median(vec[which(!is.na(vec))])
+}
+
+na_finder<-function(df) {
+  unlist(sapply(df, function(x) which(is.na(x))))
+}
+
+na_replacer<-function(vec) {
+  sapply(vec,function(x) ifelse(is.na(x)==1,median_finder(vec),x))
+}
+
+remove_negatives<-function(vec) {
+  sapply(vec,function(x) ifelse(x<0,0,x))
+}
+
+
+path_creator<-function(name) {
+  path<-getwd()
+  path_name<-paste(path,"/",name,sep="")
+  path_name<-gsub("/","\\\\",path_name)
+  print("working")
+}
+
+```
+
+### Initial feature selection
+
+```{r clean, echo=FALSE}
+
+a_data<-feature_select(absorbance)
+y_data<-feature_select(yadmit)
+p_data<-feature_select(phase)
+```
+
+### Filling blanks or NA's
+
+```{r}
+
+a_data<-sapply(a_data,function(col) na_replacer(col))
+y_data<-sapply(a_data,function(col) na_replacer(col))
+p_data<-sapply(a_data,function(col) na_replacer(col))
+a_data<-as.data.frame(a_data)
+y_data<-as.data.frame(y_data)
+p_data<-as.data.frame(p_data)
+```
+
+### Removing negatives in frequencies
+
+```{r}
+a_data<-remove_negatives(a_data)
+y_data<-remove_negatives(y_data)
+p_data<-remove_negatives(p_data)
+
+```
+
+
+### Export csv
+
+```{r}
+path<-getwd()
+path_name<-paste(path,"/","test.csv",sep="")
+path_name<-gsub("/","\\\\",path_name)
+
+write.csv(a_data,path_creator("a_data.csv"), row.names = FALSE)
+write.csv(y_data,path_creator("a_data.csv"), row.names = FALSE)
+write.csv(p_data,path_creator("a_data.csv"), row.names = FALSE)
+```
+
+
+
+```{r}
+path<-getwd()
+path_name<-paste(path,"/","a_data.csv",sep="")
+path_name<-gsub("/","\\\\",path_name)
+
+path_name2<-paste(path,"/","y_data.csv",sep="")
+path_name2<-gsub("/","\\\\",path_name2)
+
+path_name3<-paste(path,"/","p_data.csv",sep="")
+path_name3<-gsub("/","\\\\",path_name3)
+
+write.csv(a_data,path_name, row.names = FALSE)
+write.csv(y_data,path_name2, row.names = FALSE)
+write.csv(p_data,path_name3, row.names = FALSE)
+
+
+```
