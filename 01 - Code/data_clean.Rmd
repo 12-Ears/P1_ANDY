@@ -42,7 +42,7 @@ head(phase)
 ```
 ### Clean and transformation functions
 
-```{r, echo=FALSE}
+```{r, echo=FALSE,message=FALSE,warning=FALSE}
 
 feature_select<-function(df) {
   subset(df,select=-c(Subject
@@ -68,7 +68,7 @@ feature_select<-function(df) {
                       ,PTAAv4FAPoFC
                       ,TympType
                       ,OAEPoFC
-                      ,Ear.coded
+                      ,EarSide
                       ,Pressure
                       ))
 }
@@ -90,6 +90,12 @@ remove_negatives<-function(vec) {
   sapply(vec,function(x) ifelse(x<0,0,x))
 }
 
+rename_freq<-function(column_names) {
+  freq<-sapply(column_names, function(x) str_extract(x,"f\\..*(?=\\.\\b)")) %>%
+    gsub("\\.","",.)
+  c(column_names[1:14],freq[15:length(column_names)])
+  
+}
 
 path_creator<-function(name) {
   path<-getwd()
@@ -121,6 +127,16 @@ y_data<-as.data.frame(y_data)
 p_data<-as.data.frame(p_data)
 ```
 
+### Renaming frequency columns
+
+```{r}
+
+new_name<-rename_freq(names(a_data))
+colnames(a_data)<-new_name
+
+```
+
+
 ### Removing negatives in frequencies
 
 ```{r}
@@ -129,6 +145,7 @@ y_data<-remove_negatives(y_data)
 p_data<-remove_negatives(p_data)
 
 ```
+
 
 
 ### Export csv
